@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/menu_release"
+        android:title="Release/正式发行版本"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/menu_test_net"
+        android:title="TestNet/社区版本"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/menu_debug"
+        android:title="Debug/Develop/开发调试版本"
+        app:showAsAction="never" />
+</menu>

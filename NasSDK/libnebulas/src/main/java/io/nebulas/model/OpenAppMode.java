@@ -1,5 +1,6 @@
 package io.nebulas.model;
 
+import android.os.Bundle;
 import com.google.gson.Gson;
 
 /**
@@ -18,5 +19,15 @@ public class OpenAppMode {
 
        return new Gson().toJson(openAppMode);
 
+    }
+
+    public Bundle toBundle() {
+        Bundle bundle = new Bundle();
+        bundle.putString("category", category);
+        bundle.putString("des", des);
+        if (pageParams!=null) {
+            bundle.putBundle("parameters", pageParams.toBundle());
+        }
+        return bundle;
     }
 }

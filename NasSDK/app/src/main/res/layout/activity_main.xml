@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -14,68 +12,50 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginTop="20dp"
-        android:text="Hello Nebulas!" />
+        android:text="Thank you for your attention! " />
 
     <TextView
-        android:id="@+id/address"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_margin="5dp"
-        android:text="n1fyUVhnjRgLfVLXzEJ8D6oRpdGRxwdpArg" />
-
-    <TextView
-        android:id="@+id/showAccountState"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_margin="5dp" />
-
-    <EditText
-        android:id="@+id/goods_name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Please input goods name"
-        android:inputType="text"
-        android:text="Nebulas"
-        android:textSize="16dp" />
-
-    <EditText
-        android:id="@+id/goods_desc"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Please input goods description"
-        android:inputType="text"
-        android:text="星云链，下一代公链"
-        android:textSize="16dp" />
+        android:text="感谢关注！" />
 
     <Button
-        android:id="@+id/pay"
+        android:id="@+id/transfer"
+        android:layout_marginTop="20dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="nasPay"
-        android:text="PAY" />
+        android:onClick="transfer"
+        android:text="Transfer/转账" />
 
     <Button
         android:id="@+id/call"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="nasCall"
-        android:text="CALL" />
+        android:onClick="contractCall"
+        android:text="Contract-Call/智能合约调用" />
 
     <Button
-        android:id="@+id/queryTransfer"
+        android:id="@+id/auth"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="nasQueryTransferStatus"
-        android:text="Query Transfer STATUS" />
+        android:onClick="auth"
+        android:text="Authorize/钱包授权" />
 
     <Button
         android:id="@+id/queryAccountState"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="nasQueryAccountState"
-        android:text="Query Account STATUS" />
+        android:text="Query Account/资产查询" />
+
+    <Button
+        android:id="@+id/queryTransfer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="nasQueryTransferStatus"
+        android:text="Query Transaction/交易查询" />
 
     <Button
         android:id="@+id/callContract"
@@ -84,6 +64,10 @@
         android:onClick="nasCallContract"
         android:text="CALL CONTRACT FUNCTION" />
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

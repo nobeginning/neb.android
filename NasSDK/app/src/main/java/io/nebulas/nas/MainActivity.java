@@ -5,6 +5,9 @@ import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -14,8 +17,13 @@ import java.util.Arrays;
 
 import io.nebulas.Constants;
 import io.nebulas.api.SmartContracts;
+import io.nebulas.configuration.Configuration;
 import io.nebulas.model.ContractModel;
 import io.nebulas.model.GoodsModel;
+import io.nebulas.nas.query.QueryAccountActivity;
+import io.nebulas.nas.query.QueryTransactionActivity;
+import io.nebulas.nas.transfer.ContractCallActivity;
+import io.nebulas.nas.transfer.TransferActivity;
 import io.nebulas.utils.Util;
 
 public class MainActivity extends AppCompatActivity {
@@ -26,112 +34,60 @@ public class MainActivity extends AppCompatActivity {
 
     private String serialNumber = "";
 
-    private TextView tvAddress,tvShowAccountState;
-
-    private EditText goodsName,goodsDescription;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        tvAddress = findViewById(R.id.address);
-        tvShowAccountState = findViewById(R.id.showAccountState);
-        goodsName = findViewById(R.id.goods_name);
-        goodsDescription = findViewById(R.id.goods_desc);
+        Configuration.INSTANCE.useDebug();
+        updateTitle();
     }
 
-    public void nasPay(View view){
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
 
-        if (view == null) {
-            return;
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_release:
+                Configuration.INSTANCE.useRelease();
+                break;
+            case R.id.menu_test_net:
+                Configuration.INSTANCE.useTestNet();
+                break;
+            case R.id.menu_debug:
+                Configuration.INSTANCE.useDebug();
+                break;
         }
-        serialNumber = Util.getRandomCode(Constants.RANDOM_LENGTH);
-
-        String to = "n1ULQeCi1FEbDn4tktufhzZXCTnv4eJQb4C";//入账钱包地址，钱包地址，钱包地址
-
-        GoodsModel goods = new GoodsModel();
-        goods.name = goodsName.getText().toString();
-        goods.desc = goodsDescription.getText().toString();
-
-        SmartContracts.pay(this, Constants.MAIN_NET, goods,  to, value , serialNumber);
-
+        updateTitle();
+        return super.onOptionsItemSelected(item);
     }
 
-    public void nasCall(View view){
-
-        serialNumber = Util.getRandomCode(Constants.RANDOM_LENGTH);
-
-        GoodsModel goods = new GoodsModel();
-        goods.name = goodsName.getText().toString();
-        goods.desc = goodsDescription.getText().toString();
-
-
-        String to = "n1zVUmH3BBebksT4LD5gMiWgNU9q3AMj3se";//部署上链的，合约地址，合约地址，合约地址
-        String functionName = "set";
-
-        String[] args = new String[]{"one","two","three"};
-
-        SmartContracts.call(this, Constants.MAIN_NET ,  goods, functionName, to, value, args, serialNumber);
+    private void updateTitle() {
+        setTitle(Configuration.INSTANCE.getCurrentReleaseType().getDesc());
     }
 
-    public void nasQueryTransferStatus(View view){
-
-        if (TextUtils.isEmpty(serialNumber)) {
-            Toast.makeText(this,"serialNumber is empty !",Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        SmartContracts.queryTransferStatus(Constants.MAIN_NET, serialNumber,new SmartContracts.StatusCallback(){
-            @Override
-            public void onSuccess(String response) {
-
-                Log.i(TAG,"response:" + response);
-
-                Looper.prepare();
-                Toast.makeText(MainActivity.this,"response:"+response,Toast.LENGTH_LONG).show();
-                Looper.loop();
-
-            }
-
-            @Override
-            public void onFail(String error) {
-
-                Log.i(TAG,"error:" + error);
-
-                Looper.prepare();
-                Toast.makeText(MainActivity.this,"error:" + error,Toast.LENGTH_LONG).show();
-                Looper.loop();
-            }
-        });
+    public void transfer(View view) {
+        TransferActivity.Companion.launch(this);
     }
 
-    public void nasQueryAccountState(View view){
-        String address = tvAddress.getText().toString();
-        SmartContracts.queryAccountState(address, new SmartContracts.StatusCallback() {
-            @Override
-            public void onSuccess(final String response) {
-
-                Log.i(TAG,"response:" + response);
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(MainActivity.this,"response:"+response,Toast.LENGTH_LONG).show();
-                        if (tvShowAccountState != null) {
-                            tvShowAccountState.setText(response);
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void onFail(String error) {
-
-                Log.i(TAG,"error:" + error);
-            }
-        });
+    public void auth(View view) {
+        SmartContracts.auth(this);
     }
 
+    public void contractCall(View view) {
+        ContractCallActivity.Companion.launch(this);
+    }
+
+    public void nasQueryTransferStatus(View view) {
+        QueryTransactionActivity.Companion.launch(this);
+    }
+
+    public void nasQueryAccountState(View view) {
+        QueryAccountActivity.Companion.launch(this);
+    }
 
     public void nasCallContract(View view) {
         ContractModel contractModel = new ContractModel();
@@ -146,16 +102,16 @@ public class MainActivity extends AppCompatActivity {
         contractModel.function = "history";
         String from = "n22Djb3G8dzLyeRMWAxov7j3ExLdhnLtwgw";
 
-        SmartContracts.simulateCall(contractModel,from,from,1, new SmartContracts.StatusCallback() {
+        SmartContracts.simulateCall(contractModel, from, from, 1, new SmartContracts.StatusCallback() {
             @Override
             public void onSuccess(final String response) {
 
-                Log.i(TAG,"response:" + response);
+                Log.i(TAG, "response:" + response);
 
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(MainActivity.this,response,Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, response, Toast.LENGTH_LONG).show();
                     }
                 });
             }
@@ -163,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onFail(String error) {
 
-                Log.i(TAG,"error:" + error);
+                Log.i(TAG, "error:" + error);
             }
         });
     }

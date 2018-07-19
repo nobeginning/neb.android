@@ -1,3 +1,9 @@
 <resources>
-    <string name="app_name">Nas Nano SDK</string>
+    <string name="app_name">Nas Nano SDK DEMO</string>
+
+    <string-array name="query_type">
+        <item>Balance/资产:Account/钱包资产</item>
+        <item>Transaction/交易:By SerialNo/随机码</item>
+        <item>Transaction/交易:By Hash/交易Hash</item>
+    </string-array>
 </resources>
