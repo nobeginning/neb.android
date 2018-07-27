@@ -11,6 +11,7 @@ import android.widget.Toast
 
 import io.nebulas.Constants
 import io.nebulas.configuration.Configuration
+import io.nebulas.configuration.VersionInfo
 
 /**
  * Created by donald99 on 18/5/23.
@@ -39,8 +40,10 @@ object ContractAction {
 
     fun start(context: Context, bundle: Bundle) {
         val intent = Intent()
+        bundle.putString("versionName", VersionInfo.VERSION_NAME)
+        bundle.putInt("versionCode", VersionInfo.VERSION_CODE)
+        bundle.putLong("invokeTime", System.currentTimeMillis())
         intent.putExtras(bundle)
-        intent.putExtra("time", System.currentTimeMillis())
         intent.component = ComponentName(Configuration.getNasNanoPackage(), Configuration.getInvokeTargetActivity())
         intent.action = "android.intent.action.MAIN"
         intent.addCategory("android.intent.category.LAUNCHER")

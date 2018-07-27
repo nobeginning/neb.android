@@ -1,30 +1,20 @@
 package io.nebulas.nas;
 
 import android.os.Bundle;
-import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.Arrays;
-
-import io.nebulas.Constants;
 import io.nebulas.api.SmartContracts;
 import io.nebulas.configuration.Configuration;
 import io.nebulas.model.ContractModel;
-import io.nebulas.model.GoodsModel;
 import io.nebulas.nas.query.QueryAccountActivity;
 import io.nebulas.nas.query.QueryTransactionActivity;
 import io.nebulas.nas.transfer.ContractCallActivity;
 import io.nebulas.nas.transfer.TransferActivity;
-import io.nebulas.utils.Util;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -39,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Configuration.INSTANCE.useDebug();
+        Configuration.INSTANCE.enableLog();
         updateTitle();
     }
 

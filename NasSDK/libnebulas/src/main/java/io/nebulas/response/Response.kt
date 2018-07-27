@@ -2,11 +2,7 @@ package io.nebulas.response
 
 import android.os.Parcel
 import android.os.Parcelable
-import com.google.gson.Gson
-
-private val responseGson:Gson by lazy {
-    Gson()
-}
+import org.json.JSONObject
 
 open class Response(open val errorCode: Int, open val errorMessage: String) : Parcelable {
 
@@ -27,8 +23,15 @@ open class Response(open val errorCode: Int, open val errorMessage: String) : Pa
             source.readString()
     )
 
+    open fun toJSONObject():JSONObject {
+        return JSONObject().apply {
+            put("errorCode", errorCode)
+            put("errorMessage", errorMessage)
+        }
+    }
+
     override fun toString(): String {
-        return responseGson.toJson(this)
+        return toJSONObject().toString()
     }
 
     override fun describeContents() = 0
@@ -54,6 +57,13 @@ class TransferResponse(errorCode: Int, errorMessage: String, val hash: String) :
         writeString(hash)
     }
 
+    override fun toJSONObject(): JSONObject {
+        val obj = super.toJSONObject()
+        return obj.apply {
+            put("hash", hash)
+        }
+    }
+
     companion object {
         @JvmField
         val CREATOR: Parcelable.Creator<TransferResponse> = object : Parcelable.Creator<TransferResponse> {
@@ -76,6 +86,13 @@ class AuthResponse(errorCode: Int, errorMessage: String, val address: String) : 
         writeInt(errorCode)
         writeString(errorMessage)
         writeString(address)
+    }
+
+    override fun toJSONObject(): JSONObject {
+        val obj = super.toJSONObject()
+        return obj.apply {
+            put("address", address)
+        }
     }
 
     companion object {

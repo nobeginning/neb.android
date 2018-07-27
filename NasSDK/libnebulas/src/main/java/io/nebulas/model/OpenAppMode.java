@@ -1,7 +1,6 @@
 package io.nebulas.model;
 
 import android.os.Bundle;
-import com.google.gson.Gson;
 
 /**
  * 唤醒App类
@@ -14,12 +13,6 @@ public class OpenAppMode {
     public String des;         // 确认转账
 
     public PageParamsModel pageParams;
-
-    public static String getOpenAppModel(OpenAppMode openAppMode){
-
-       return new Gson().toJson(openAppMode);
-
-    }
 
     public Bundle toBundle() {
         Bundle bundle = new Bundle();

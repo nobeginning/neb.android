@@ -4,15 +4,13 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.text.TextUtils
-import com.google.gson.Gson
 import io.nebulas.Constants
 import io.nebulas.action.ContractAction
+import io.nebulas.http.JSONRequest
+import io.nebulas.logger.logD
 import io.nebulas.model.*
-import io.nebulas.okhttp.OkHttpManager
 import io.nebulas.utils.Util
-import okhttp3.*
 import org.json.JSONObject
-import java.io.IOException
 import java.math.BigDecimal
 
 
@@ -24,31 +22,36 @@ import java.math.BigDecimal
  */
 object SmartContracts {
 
-    private val mainHandler = Handler(Looper.getMainLooper())
-
     /**
      * 转账接口
      * 兼容旧版本SDK的接口  / compatible for the old sdk
      */
     @JvmStatic
-    fun pay(context: Context, mainNet: Int, goods: GoodsModel, to: String, value: String, serialNumber: String) {
-        pay(context, mainNet, to, value, goods.name, goods.desc, serialNumber, null, null)
+    fun pay(context: Context, netType: Int, goods: GoodsModel, to: String, value: String, serialNumber: String) {
+        pay(context, netType, to, value, goods.name, goods.desc, serialNumber, null, null)
     }
 
     /**
      * pay接口：       星云地址之间的转账
      *
-     * @param mainNet      0 测试网    1 主网
-     * @param goods        商品详情
+     * @param netType      0 测试网    1 主网
+     * @see Constants.MAIN_NET  主网
+     * @see Constants.TEST_NET  测试网
+     *
      * @param to           转账目标地址
      * @param value        转账value，单位为wei (1NAS =10^18 wei)
+     * @param goodsName    商品名称(暂时用不到)
+     * @param goodsDesc    商品描述(暂时用不到)
+     *
      * @param serialNumber 随机码
-     * @param gasPrice     gasPrice
-     * @param gasLimit     gasLimit
+     * @see Util.getRandomCode()
+     *
+     * @param gasPrice     自定义gasPrice
+     * @param gasLimit     自定义gasLimit
      */
     @JvmStatic
     fun pay(context: Context,
-            mainNet: Int,
+            netType: Int,
             to: String,
             value: String,
             goodsName: String? = null,
@@ -77,7 +80,7 @@ object SmartContracts {
 
         val pageParamsModel = TransferPageParamsModel()
         pageParamsModel.serialNumber = serialNumber
-        if (mainNet == 0) {
+        if (netType == 0) {
             pageParamsModel.callback = Constants.TEST_NET_CALL_BACK
         } else {
             pageParamsModel.callback = Constants.MAIN_NET_CALL_BACK
@@ -115,24 +118,34 @@ object SmartContracts {
      * 兼容旧版本SDK的接口  / compatible for the old sdk
      */
     @JvmStatic
-    fun call(context: Context, mainNet: Int, goods: GoodsModel, functionName: String, to: String, value: String, args: Array<String>, serialNumber: String) {
-        call(context, mainNet, to, value, functionName, args, goods.name, goods.desc, serialNumber, null, null)
+    fun call(context: Context, netType: Int, goods: GoodsModel, functionName: String, to: String, value: String, args: Array<String>, serialNumber: String) {
+        call(context, netType, to, value, functionName, args, goods.name, goods.desc, serialNumber, null, null)
     }
 
     /**
      * call函数：      调用智能合约
      * 所得结果上链
      *
-     * @param mainNet      0 测试网    1 主网
+     * @param netType      0 测试网    1 主网
+     * @see Constants.MAIN_NET  主网
+     * @see Constants.TEST_NET  测试网
+     *
      * @param functionName 调用合约的函数名
      * @param to           转账目标地址
      * @param value        转账value，单位为wei (1NAS =10^18 wei)
      * @param args         函数参数列表
+     * @param goodsName    商品名称(暂时用不到)
+     * @param goodsDesc    商品描述(暂时用不到)
+     *
      * @param serialNumber 随机码
+     * @see Util.getRandomCode()
+     *
+     * @param gasPrice     自定义gasPrice
+     * @param gasLimit     自定义gasLimit
      */
     @JvmStatic
     fun call(context: Context,
-             mainNet: Int,
+             netType: Int,
              to: String,
              value: String,
              functionName: String,
@@ -163,7 +176,7 @@ object SmartContracts {
 
         val pageParamsModel = TransferPageParamsModel()
         pageParamsModel.serialNumber = serialNumber
-        if (mainNet == 0) {
+        if (netType == 0) {
             pageParamsModel.callback = Constants.TEST_NET_CALL_BACK
         } else {
             pageParamsModel.callback = Constants.MAIN_NET_CALL_BACK
@@ -201,14 +214,24 @@ object SmartContracts {
     /**
      * 部署智能合约
      *
-     * @param mainNet      0 测试网    1 主网
+     * @param netType      0 测试网    1 主网
+     * @see Constants.MAIN_NET  主网
+     * @see Constants.TEST_NET  测试网
+     *
      * @param source       智能合约代码
      * @param sourceType   智能合约Type
+     * @param goodsName    商品名称(暂时用不到)
+     * @param goodsDesc    商品描述(暂时用不到)
+     *
      * @param serialNumber 随机码
+     * @see Util.getRandomCode()
+     *
+     * @param gasPrice     自定义gasPrice
+     * @param gasLimit     自定义gasLimit
      */
     @JvmStatic
     fun deploy(context: Context,
-               mainNet: Int,
+               netType: Int,
                source: String,
                sourceType: String,
                goodsName: String? = null,
@@ -241,7 +264,7 @@ object SmartContracts {
 
         val pageParamsModel = TransferPageParamsModel()
         pageParamsModel.serialNumber = serialNumber
-        if (mainNet == 0) {
+        if (netType == 0) {
             pageParamsModel.callback = Constants.TEST_NET_CALL_BACK
         } else {
             pageParamsModel.callback = Constants.MAIN_NET_CALL_BACK
@@ -303,7 +326,7 @@ object SmartContracts {
      * 兼容旧版本SDK的接口  / compatible for the old sdk
      */
     @JvmStatic
-    fun queryAccountState(address: String, callback: StatusCallback?){
+    fun queryAccountState(address: String, callback: StatusCallback?) {
         queryAccountState(0, address, callback)
     }
 
@@ -313,36 +336,29 @@ object SmartContracts {
      * @param callback
      */
     @JvmStatic
-    fun queryAccountState(mainNet: Int, address: String, callback: StatusCallback?) {
+    fun queryAccountState(netType: Int, address: String, callback: StatusCallback?) {
         if (address.isBlank()) {
             callback?.onFail("IllegalArgument : \"address\" when calling function#SmartContracts.queryAccountState")
             return
         }
         val accountState = AccountState()
         accountState.address = address
-        val requestBody = FormBody.create(MediaType.parse("application/json; charset=utf-8"), Gson().toJson(accountState))
-        val url = if (mainNet == 0) {
+        val url = if (netType == 0) {
             Constants.TEST_NET_RPC_ACCOUNT_STATE_URL
         } else {
             Constants.MAIN_NET_RPC_ACCOUNT_STATE_URL
         }
-        val request = Request.Builder().url(url).post(requestBody).build()
-        OkHttpManager.getInstance().okHttpClient.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                callback?.apply {
-                    mainHandler.post {
-                        onFail(e.message ?: e.toString())
-                    }
-                }
+
+        val jsonRequest = JSONRequest(url)
+        jsonRequest.post(accountState.toJsonString(), object : JSONRequest.RequestCallback {
+            override fun onSucceed(response: String) {
+                logD(response)
+                callback?.onSuccess(response)
             }
 
-            @Throws(IOException::class)
-            override fun onResponse(call: Call, response: Response?) {
-                if (callback != null && response != null) {
-                    mainHandler.post {
-                        callback.onSuccess(response.body()?.string() ?: "{}")
-                    }
-                }
+            override fun onFailed(errorMessage: String) {
+                logD(errorMessage)
+                callback?.onFail(errorMessage)
             }
         })
     }
@@ -358,36 +374,30 @@ object SmartContracts {
      * @param callback
      */
     @JvmStatic
-    fun simulateCall(contractModel: ContractModel<*>?, from: String, to: String, nonce: Int, callback: StatusCallback?) {
+    fun simulateCall(contractModel: ContractModel?, from: String, to: String, nonce: Int, callback: StatusCallback?) {
         if (contractModel == null || TextUtils.isEmpty(from)) {
             return
         }
-        val callContractModel = CallContractModel()
-        callContractModel.contract = contractModel
-        callContractModel.from = from
-        callContractModel.to = to
-        callContractModel.nonce = nonce
-        callContractModel.gasLimit = "400000"
-        callContractModel.gasPrice = "1000000"
-        callContractModel.value = "0"
-        val requestBody = FormBody.create(MediaType.parse("application/json; charset=utf-8"), Gson().toJson(callContractModel))
-        val request = Request.Builder().url(Constants.MAIN_NET_RPC_CALL_URL).post(requestBody).build()
-        OkHttpManager.getInstance().okHttpClient.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                callback?.apply {
-                    mainHandler.post {
-                        onFail(e.message ?: e.toString())
-                    }
-                }
+        val callContractModel = CallContractModel().apply {
+            contract = contractModel
+            this.from = from
+            this.to = to
+            this.nonce = nonce
+            gasLimit = "400000"
+            gasPrice = "1000000"
+            value = "0"
+        }
+
+        val jsonRequest = JSONRequest(Constants.MAIN_NET_RPC_CALL_URL)
+        jsonRequest.post(callContractModel.toJsonString(), object : JSONRequest.RequestCallback {
+            override fun onSucceed(response: String) {
+                logD(response)
+                callback?.onSuccess(response)
             }
 
-            @Throws(IOException::class)
-            override fun onResponse(call: Call, response: Response?) {
-                if (callback != null && response != null) {
-                    mainHandler.post {
-                        callback.onSuccess(response.body()?.string() ?: "{}")
-                    }
-                }
+            override fun onFailed(errorMessage: String) {
+                logD(errorMessage)
+                callback?.onFail(errorMessage)
             }
         })
     }
@@ -395,38 +405,35 @@ object SmartContracts {
     /**
      * 查询交易状态
      *
-     * @param mainNet      0 测试网    1 主网
+     * @param netType      0 测试网    1 主网
+     * @see Constants.MAIN_NET  主网
+     * @see Constants.TEST_NET  测试网
+     *
      * @param serialNumber
+     * @see Util.getRandomCode()
      */
     @JvmStatic
-    fun queryTransferStatus(mainNet: Int, serialNumber: String, callback: StatusCallback?) {
+    fun queryTransferStatus(netType: Int, serialNumber: String, callback: StatusCallback?) {
         if (serialNumber.isBlank()) {
             callback?.onFail("IllegalArgument : \"serialNumber\" when calling function#SmartContracts.queryTransferStatus")
             return
         }
-        val endpoint = if (mainNet == 0) {
+        val endpoint = if (netType == 0) {
             Constants.MAIN_NET_PAY_URL + "pay/query?payId=" + serialNumber
         } else {
             Constants.MAIN_NET_PAY_URL + "mainnet/pay/query?payId=" + serialNumber
         }
 
-        val request = Request.Builder().get().url(endpoint).build()
-        OkHttpManager.getInstance().okHttpClient.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                callback?.apply {
-                    mainHandler.post {
-                        onFail(e.message ?: e.toString())
-                    }
-                }
+        val jsonRequest = JSONRequest(endpoint)
+        jsonRequest.get(object : JSONRequest.RequestCallback {
+            override fun onSucceed(response: String) {
+                logD(response)
+                callback?.onSuccess(response)
             }
 
-            @Throws(IOException::class)
-            override fun onResponse(call: Call, response: Response?) {
-                if (callback != null && response != null) {
-                    mainHandler.post {
-                        callback.onSuccess(response.body()?.string() ?: "{}")
-                    }
-                }
+            override fun onFailed(errorMessage: String) {
+                logD(errorMessage)
+                callback?.onFail(errorMessage)
             }
         })
     }
@@ -434,76 +441,72 @@ object SmartContracts {
     /**
      * 查询交易状态
      *
-     * @param mainNet      0 测试网    1 主网
+     * @param netType      0 测试网    1 主网
+     * @see Constants.MAIN_NET  主网
+     * @see Constants.TEST_NET  测试网
+     *
      * @param transactionHash   交易hash
      */
     @JvmStatic
-    fun queryTransferStatusByHash(mainNet: Int, transactionHash: String, callback: StatusCallback?) {
+    fun queryTransferStatusByHash(netType: Int, transactionHash: String, callback: StatusCallback?) {
         if (transactionHash.isBlank()) {
-            callback?.onFail("IllegalArgument : \"transactionHash\" when calling function#SmartContracts.queryTransferStatusByHash")
+            val message = "IllegalArgument : \"transactionHash\" when calling function#SmartContracts.queryTransferStatusByHash"
+            logD(message)
+            callback?.onFail(message)
             return
         }
 
-        val url = if (mainNet == 0) {
+        val url = if (netType == 0) {
             Constants.TEST_NET_RPC_QUERY_TX
         } else {
             Constants.MAIN_NET_RPC_QUERY_TX
         }
 
-        val request = Request.Builder()
-                .url(url)
-                .post(FormBody.create(MediaType.parse("application/json; charset=utf-8"), Gson().toJson(mapOf(Pair("hash", transactionHash)))))
-                .build()
-        OkHttpManager.getInstance().okHttpClient.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                callback?.apply {
-                    mainHandler.post {
-                        onFail(e.message ?: e.toString())
+        val jsonRequest = JSONRequest(url)
+        jsonRequest.post(JSONObject().apply { put("hash", transactionHash) }.toString(), object : JSONRequest.RequestCallback {
+            override fun onSucceed(response: String) {
+                if (callback == null) {
+                    return
+                }
+                try {
+                    val finalResult: String
+                    val json = JSONObject(response)
+                    val resultJson = json.optJSONObject("result")
+                    if (resultJson != null) {
+                        finalResult = JSONObject().apply {
+                            put("code", 0)
+                            put("msg", "success")
+                            put("data", resultJson)
+                        }.toString()
+                        logD(finalResult)
+                        callback.onSuccess(finalResult)
+                        return
                     }
+                    if (json.has("error")) {
+                        val msg = json.optString("error") ?: "Unknown error"
+                        finalResult = JSONObject().apply {
+                            put("code", 1)
+                            put("msg", msg)
+                            put("data", JSONObject())
+                        }.toString()
+                        logD(finalResult)
+                        callback.onSuccess(finalResult)
+                        return
+                    }
+                    throw IllegalStateException("")
+                } catch (e: Exception) {
+                    val result = JSONObject().apply {
+                        put("code", 10000)
+                        put("msg", "Result parse failed")
+                    }.toString()
+                    logD(result)
+                    callback.onSuccess(result)
                 }
             }
 
-            @Throws(IOException::class)
-            override fun onResponse(call: Call, response: Response?) {
-                if (callback != null && response != null) {
-                    val responseString = response.body()?.string() ?: "{}"
-                    try {
-                        val finalResult: String
-                        val json = JSONObject(responseString)
-                        val resultJson = json.optJSONObject("result")
-                        if (resultJson != null) {
-                            finalResult = JSONObject().apply {
-                                put("code", 0)
-                                put("msg", "success")
-                                put("data", resultJson)
-                            }.toString()
-                            mainHandler.post {
-                                callback.onSuccess(finalResult)
-                            }
-                            return
-                        }
-                        if (json.has("error")) {
-                            val msg = json.optString("error") ?: "Unknown error"
-                            finalResult = JSONObject().apply {
-                                put("code", 1)
-                                put("msg", msg)
-                                put("data", JSONObject())
-                            }.toString()
-                            mainHandler.post {
-                                callback.onSuccess(finalResult)
-                            }
-                            return
-                        }
-                        throw IllegalStateException("")
-                    } catch (e: Exception) {
-                        mainHandler.post {
-                            callback.onSuccess(JSONObject().apply {
-                                put("code", 10000)
-                                put("msg", "Result parse failed")
-                            }.toString())
-                        }
-                    }
-                }
+            override fun onFailed(errorMessage: String) {
+                logD(errorMessage)
+                callback?.onFail(errorMessage)
             }
         })
     }

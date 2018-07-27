@@ -3,6 +3,7 @@ package io.nebulas.api
 import android.content.Intent
 import android.os.Bundle
 import io.nebulas.Constants
+import io.nebulas.logger.logD
 import io.nebulas.response.AuthResponse
 import io.nebulas.response.Response
 import io.nebulas.response.TransferResponse
@@ -11,6 +12,7 @@ object ResultHelper {
 
     fun handleIntent(intent: Intent, handler: ResponseHandler) {
         val response = parseIntent(intent)
+        logD(response.toString())
         handler.onResponse(response)
     }
 

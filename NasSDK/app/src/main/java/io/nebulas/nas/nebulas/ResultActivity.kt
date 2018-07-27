@@ -18,7 +18,7 @@ class ResultActivity : AppCompatActivity(), ResponseHandler {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_result)
-        ResultHelper.handleIntent(intent, this)
+        ResultHelper.handleIntent(intent, this) //用于将Intent中的返回值转为Response对象
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -26,7 +26,7 @@ class ResultActivity : AppCompatActivity(), ResponseHandler {
         if (intent == null) {
             return
         }
-        ResultHelper.handleIntent(intent, this)
+        ResultHelper.handleIntent(intent, this) //用于将Intent中的返回值转为Response对象
     }
 
     override fun onResponse(response: Response) {

@@ -32,6 +32,11 @@ object Util {
         return random
     }
 
+    @JvmStatic
+    fun getRandomCode(): String {
+        return getRandomCode(32)
+    }
+
     fun getAppIconBytes(iconDrawable: Drawable): ByteArray {
         val bm = getAppIcon(iconDrawable) ?: return ByteArray(0)
         val bytes = bitmap2Bytes(bm)

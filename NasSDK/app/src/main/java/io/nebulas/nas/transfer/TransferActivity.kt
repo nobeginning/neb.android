@@ -40,7 +40,7 @@ class TransferActivity : AppCompatActivity() {
             }
             SmartContracts.pay(
                     context = this,
-                    mainNet = netType,
+                    netType = netType,
                     to = to,
                     value = amount,
                     gasPrice = gasPrice,

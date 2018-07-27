@@ -44,7 +44,7 @@ class ContractCallActivity : AppCompatActivity() {
             val args = et_contract_args.text.toString().split(",")
             SmartContracts.call(
                     context = this,
-                    mainNet = netType,
+                    netType = netType,
                     to = to,
                     functionName = functionName,
                     args = args.toTypedArray(),

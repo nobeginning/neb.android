@@ -14,6 +14,15 @@ object Configuration {
     private const val actPath = "$packagePrefix.module.launch.LaunchActivity"
 
     private var releaseType: ReleaseType = ReleaseType.RELEASE
+    var logEnabled:Boolean = false
+
+    fun enableLog(){
+        logEnabled = true
+    }
+
+    fun disableLog(){
+        logEnabled = false
+    }
 
     fun useTestNet() {
         releaseType = ReleaseType.TEST_NET

@@ -32,7 +32,10 @@ class QueryAccountActivity : AppCompatActivity(), SmartContracts.StatusCallback 
             progress_bar.visibility = View.VISIBLE
             val address = et_address.text.toString()
             cacheAddress(address)
-            SmartContracts.queryAccountState(Configuration.getCurrentReleaseType().netType, address, this)
+            SmartContracts.queryAccountState(
+                    Configuration.getCurrentReleaseType().netType,
+                    address,
+                    this)
         }
     }
 
