@@ -12,6 +12,7 @@ import io.nebulas.model.*
 import io.nebulas.utils.Util
 import org.json.JSONObject
 import java.math.BigDecimal
+import java.math.RoundingMode
 
 
 /**
@@ -96,7 +97,12 @@ object SmartContracts {
         val payModel = PayModel()
         payModel.currency = Constants.PAY_CURRENCY
         payModel.payload = payloadModel
-        payModel.value = if (value.isEmpty()) "0" else value
+        val amountNas = if (value.isEmpty()) "0" else weiToNas(value)
+        if (amountNas.isNullOrEmpty()) {
+            ContractAction.localError(context, resultActivityPath, 20001, "IllegalArgument : \"value\" when calling function#SmartContracts.pay")
+            return
+        }
+        payModel.value = amountNas
         payModel.to = to
 
         pageParamsModel.pay = payModel
@@ -534,6 +540,16 @@ object SmartContracts {
             }
         }
         return true
+    }
+
+    private fun weiToNas(wei: String): String? {
+        return try {
+            val amountWei = BigDecimal(wei)
+            val amountNas = amountWei.divide(BigDecimal.TEN.pow(18), 18, RoundingMode.HALF_DOWN)
+            amountNas.stripTrailingZeros().toPlainString()
+        } catch (e: java.lang.Exception) {
+            null
+        }
     }
 
 }
